@@ -1,0 +1,76 @@
+plugins {
+    id 'com.android.library'
+}
+apply from: rootProject.file('gradle/common.gradle')
+
+android {
+    namespace 'com.shujie.native_leak'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 24
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+        externalNativeBuild {
+            cmake {
+//                cppFlags ""
+                abiFilters 'arm64-v8a'
+                cppFlags '-std=c++17', '-fno-exceptions', '-fno-rtti'
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
+                    'proguard-rules.pro'
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+            version "3.22.1"
+        }
+    }
+
+    flavorDimensions "stl_mode"
+    productFlavors {
+        StaticCpp {
+            dimension "stl_mode"
+            ext.artifactIdSuffix = 'static'
+            externalNativeBuild {
+                cmake {
+                    arguments = ["-DANDROID_STL=c++_static"]
+                }
+            }
+        }
+        SharedCpp {
+            dimension "stl_mode"
+            ext.artifactIdSuffix = ''
+            externalNativeBuild {
+                cmake {
+                    arguments = ["-DANDROID_STL=c++_shared"]
+                }
+            }
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+//    implementation project(':koom')
+//    implementation project(path: ':koom-common:kwai-android-base')
+    implementation project(':koom-common:kwai-android-base')
+    implementation project(':koom-common:third-party:xhook')
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
